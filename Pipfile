@@ -7,9 +7,14 @@ name = "pypi"
 fastapi = "*"
 
 [dev-packages]
+isort = "*"
+black = "*"
+colorama = "*"
 
 [requires]
 python_version = "3.11"
 
 [scripts]
 start = "python src/main.py"
+fmt-import = "isort ." 
+fmt-code = "black ."
