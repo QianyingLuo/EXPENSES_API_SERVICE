@@ -27,4 +27,6 @@ jobs:
             pipenv install --dev
     
         - name: Verify format
-          run: pipenv run fmt
+          run: |
+            pipenv run fmt-import
+            pipenv run fmt-code
