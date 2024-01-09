@@ -45,6 +45,14 @@ jobs:
 
       - name: Display Version
         run: echo "Project nEXT Version - ${{ env.NEXT_VERSION }}"
+      
+      - name: Update version remote
+        run: |
+          rm ./src/config/__init__.py
+          echo "VERSION = ${{ env.NEXT_VERSION }}" > ./src/config/__init__.py
+          git add .
+          git commit -m "chore: update package version"
+          git push
 
       - name: Login to Docker Hub
         uses: docker/login-action@v2
