@@ -27,7 +27,7 @@ jobs:
           pipenv install --dev
  
       - name: Get version
-        run: echo "::set-output name=project_version::$(grep 'VERSION =' config/config.py | cut -d'"' -f2)"
+        run: echo "::set-output name=project_version::$(grep 'VERSION = ' ./src/config/__init__.py | cut -d'"' -f2)"
 
       - name: Display Version
         run: echo "project Version ${{ env.PROJECT_VERSION }}"
