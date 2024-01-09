@@ -34,7 +34,7 @@ jobs:
       
       - name: Get package version
         run: |
-          VERSION=$(grep 'VERSION = ' ./src/config/__init__.py | cut -d'"' -f2)"
+          VERSION=$(grep 'VERSION = ' ./src/config/__init__.py | cut -d'"' -f2)
           echo "VERSION=$VERSION >> $GITHUB_ENV"
 
       - name: Display Version
