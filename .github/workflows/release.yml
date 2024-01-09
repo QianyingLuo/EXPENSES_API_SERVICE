@@ -1,11 +1,10 @@
 name: Release
-
 on:
   workflow_dispatch:
 
 jobs:
-
-  prepare-release:
+  release:
+    name: Release
     runs-on: ubuntu-latest
     outputs:
       NEXT_RELEASE: ${{ env.NEXT_RELEASE }}
