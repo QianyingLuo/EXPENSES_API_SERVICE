@@ -43,15 +43,12 @@ jobs:
           NEXT_VERSION=$(echo $current_version | sed "s/\([0-9]\+\)-SNAPSHOT$/$next_version-SNAPSHOT/")
           echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
 
-      - name: Display Version
-        run: echo "Project nEXT Version - ${{ env.NEXT_VERSION }}"
-      
       - name: Update version remote
         run: |
           rm ./src/config/__init__.py
-          echo "VERSION = ${{ env.NEXT_VERSION }}" > ./src/config/__init__.py
+          echo 'VERSION = "${{ env.NEXT_VERSION }}"' > ./src/config/__init__.py
           git add .
-          git commit -m "chore: update package version"
+          git commit -m "chore: prepare snapshot"
           git push
 
       - name: Login to Docker Hub
