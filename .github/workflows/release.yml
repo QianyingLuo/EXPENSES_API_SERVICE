@@ -38,14 +38,12 @@ jobs:
       
       - name: Get next version
         run: |
-          minor=$(grep 'VERSION = ' ./src/config/__init__.py | cut -d'"' -f2)
-          ultimo_numero=$(echo $minor | awk -F'.' '{print $NF}')
-          nuevo_ultimo_numero=$((ultimo_numero + 1))
-          NEW=$(echo $cadena | sed "s/\([0-9]\+\)$/$nuevo_ultimo_numero/")
-          echo "NEW=$NEW" >> $GITHUB_ENV
+          NEXT_VERSION=$(nuevo_numero=$(echo ${{ env.VERSION }} | awk -F'.' '{print $3}' | awk -F'-' '{print $1 + 1}'); nueva_cadena=$(echo $cadena | sed "s/\([0-9]\+\)-SNAPSHOT$/$nuevo_numero-SNAPSHOT/"); echo $nueva_cadena)
+          echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
+
 
       - name: Display Version
-        run: echo "Project nEXT Version - ${{ env.NEW }}"
+        run: echo "Project nEXT Version - ${{ env.NEXT_VERSION }}"
 
       - name: Login to Docker Hub
         uses: docker/login-action@v2
