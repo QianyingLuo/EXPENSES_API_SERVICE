@@ -6,9 +6,9 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    outputs:
-      NEXT_RELEASE: ${{ env.NEXT_RELEASE }}
-      VERSION: ${{ env.VERSION }}
+
+    permissions: 
+      contents: write
 
     steps:
       - name: Checkout code
@@ -26,8 +26,16 @@ jobs:
           pip install pipenv
           pipenv install --dev
  
-      - name: Get version
-        run: echo "::set-output name=project_version::$(grep 'VERSION = ' ./src/config/__init__.py | cut -d'"' -f2)"
+                  
+      - name: Configure Git User
+        run: | 
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+      
+      - name: Get package version
+        run: |
+          VERSION=$(grep 'VERSION = ' ./src/config/__init__.py | cut -d'"' -f2)"
+          echo "VERSION=$VERSION >> $GITHUB_ENV"
 
       - name: Display Version
-        run: echo "project Version ${{ env.PROJECT_VERSION }}"
+        run: echo "project Version ${{ env.VERSION }}"
