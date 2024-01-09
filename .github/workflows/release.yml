@@ -38,7 +38,7 @@ jobs:
       
       - name: Get next version
         run: |
-          current_version=${{ env.VERSION }}
+          current_version=$(grep 'VERSION = ' ./src/config/__init__.py | cut -d'"' -f2)
           next_version=$(echo $current_version | awk -F'.' '{print $3}' | awk -F'-' '{print $1 + 1}')
           NEXT_VERSION=$(echo $current_version | sed "s/\([0-9]\+\)-SNAPSHOT$/$next_version-SNAPSHOT/")
           echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
