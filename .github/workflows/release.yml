@@ -31,4 +31,4 @@ jobs:
         run: echo "::set-env name=PROJECT_VERSION::$(grep 'VERSION =' config/config.py | cut -d'"' -f2)"
   
       - name: Display Version
-        run: echo "Project Version: ${{ env.PROJECT_VERSION }}"
+        run: echo "project Version ${{ env.PROJECT_VERSION }}"
