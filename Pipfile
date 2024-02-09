@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 fastapi = "*"
 uvicorn = "*"
+pydantic = "*"
 
 [dev-packages]
 isort = "*"
@@ -16,6 +17,7 @@ colorama = "*"
 python_version = "3.11"
 
 [scripts]
-start = "uvicorn src.main:app --reload"
+dev-start = "uvicorn src.main:app --reload"
+start = "uvicorn src.main:app"
 fmt-import = "isort ." 
 fmt-code = "black ."
