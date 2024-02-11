@@ -1,9 +1,10 @@
 from typing import Annotated
 from fastapi import APIRouter, Body, Path
 from src.application import log
-from src.domain.common import CreationResponse, UserAlreadyExists, GenericHTTPException, UserNotFound
-from src.controller.user.domain.user_register_response import GetUserResponse, RegisterUser
-from src.application.usecases.user import user_creation_usecase, user_get_usecase
+from src.domain.common import CreationResponse, InvalidCredentials, UserAlreadyExists, GenericHTTPException, UserNotFound
+from src.controller.request.user_request import RegisterUserRequest, LoginCredentialsRequest
+from src.controller.response.user_response import GetUserResponse, LoginResultResponse
+from src.application.usecases import user_usecases
 from fastapi import FastAPI, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
@@ -20,9 +21,9 @@ router = APIRouter()
 )
 def get_user(
     user_id: Annotated[str, Path()]
-):
+) -> GetUserResponse:
     logger.debug("User -> GET -> Obtain user")
-    user = user_get_usecase.get_user(user_id)
+    user = user_usecases.get_user(user_id)
     if not user: 
         raise UserNotFound("The user does not exist")
     return GetUserResponse.to_response(user)
@@ -35,10 +36,25 @@ def get_user(
     description="Endpoint for creating a new user"
 )
 def post_user(
-    user: Annotated[RegisterUser, Body()]
-):
+    user: Annotated[RegisterUserRequest, Body()]
+) -> CreationResponse:
     logger.debug("User -> POST -> Create user")
-    return user_creation_usecase.post_user(user.to_domain())
+    return user_usecases.post_user(user.to_domain())
+
+
+@router.post(
+    path="/login",
+    response_model=LoginResultResponse,
+    operation_id="Login User",
+    description="Endpoint for evaluate login",
+)
+def login_user(
+    credentials: Annotated[LoginCredentialsRequest, Body()],
+) -> LoginResultResponse:
+    logger.debug("User -> POST -> Login user")
+    login_result = user_usecases.login(credentials.to_domain())
+    return LoginResultResponse.to_response(login_result)
+
 
 
 async def user_exists_exception_handler(
@@ -55,6 +71,7 @@ async def user_exists_exception_handler(
         ),
     )
 
+
 async def user_not_found_exception_handler(
     request: Request, exception: UserNotFound
 ):
@@ -70,6 +87,22 @@ async def user_not_found_exception_handler(
     )
 
 
+async def invalid_credentials_exception_handler(
+    request: Request, exception: InvalidCredentials
+):
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content=jsonable_encoder(
+            GenericHTTPException(
+                status_code=str(status.HTTP_400_BAD_REQUEST),
+                type="INVALID_CREDENTIALS",
+                detail=exception.args[0],
+            )
+        ),
+    )
+
 def user_exception_handlers(app: FastAPI) -> None:
     app.add_exception_handler(UserAlreadyExists, user_exists_exception_handler) # type: ignore
     app.add_exception_handler(UserNotFound, user_not_found_exception_handler) # type: ignore
+    app.add_exception_handler(InvalidCredentials, invalid_credentials_exception_handler) # type: ignore
+

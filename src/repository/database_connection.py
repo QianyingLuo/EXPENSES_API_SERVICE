@@ -32,8 +32,11 @@ class DatabaseConnection:
     def find_one(self, collection: str, select: dict[str, Any], **kwargs: Any):
         return self.client[database_name][collection].find_one(select, **kwargs)
 
-    def insert(self, collection: str, document):
+    def insert_one(self, collection: str, document):
         return self.client[database_name][collection].insert_one(document)
+    
+    def update_one(self, collection: str, select: dict[str, Any], update: dict[str, Any]):
+        return self.client[database_name][collection].update_one(select, update)
     
 
 database = DatabaseConnection()

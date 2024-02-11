@@ -11,6 +11,8 @@ bson = "*"
 pymongo = "*"
 phonenumbers = "*"
 pydantic = {extras = ["email"], version = "*"}
+bcrypt = "*"
+pyjwt = "*"
 
 [dev-packages]
 isort = "*"
