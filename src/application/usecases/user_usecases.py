@@ -1,3 +1,5 @@
+from datetime import timedelta, timezone
+import datetime
 from typing import Optional
 from fastapi import HTTPException, status
 import jwt
@@ -24,6 +26,7 @@ def post_user(user: RegisterUser) -> CreationResponse:
     user.password = hashed_password.decode('utf-8')
     return user_repository.post_user(user)
 
+
 def login(credentials: LoginCredentials) -> LoginResult:
     user = user_repository.get_user_by_email(credentials.email)
 
@@ -38,23 +41,44 @@ def login(credentials: LoginCredentials) -> LoginResult:
     if not password_is_valid:
         raise InvalidCredentials("The credentials provided are not valid")
 
-    user_jwt = JwtUser.model_validate(user.model_dump())
     secret_jwt = jwt_environment_variables["TOKEN_SECRET"]
-    encoded_jwt = jwt.encode(user_jwt.model_dump(), secret_jwt, algorithm="HS256")
-
+    user_jwt = JwtUser.model_validate(user.model_dump())
+    expiration = timedelta(days=1)
+    user_jwt_dictionary = user_jwt.model_dump()
+    user_jwt_dictionary["exp"] = datetime.datetime.now().astimezone(tz=timezone.utc) + expiration
+    encoded_jwt = jwt.encode(user_jwt_dictionary, secret_jwt, algorithm="HS256")
     user.token = encoded_jwt
     result = user_repository.update_token(user.id, encoded_jwt)
     
     if not result:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Some error occured. Contact with devs.toni@gmail.com"
+            detail="Some error occured while trying to update token. Contact with devs.toni@gmail.com"
         )
-    
+ 
     return LoginResult(
         firstname=user_jwt.firstname,
         lastname=user_jwt.lastname,
         email=user_jwt.email,
         token=encoded_jwt
     )
+
+def logout(user_info: JwtUser) -> bool:
+    user = user_repository.get_user_by_email(user_info.email)
     
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Some error occured while trying to get token user. Contact with devs.toni@gmail.com"
+        )
+    
+    user.token = None
+    result = user_repository.update_token(user.id, "")
+    
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Some error occured while trying to update token. Contact with devs.toni@gmail.com"
+        )
+    
+    return True

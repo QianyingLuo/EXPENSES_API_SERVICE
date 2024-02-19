@@ -30,3 +30,6 @@ class LoginResultResponse(CustomBaseModel):
     def to_response(cls, login_credentials: domain.LoginResult) -> Self:
         return cls.model_validate(login_credentials.model_dump())
 
+
+class LogoutResultResponse(CustomBaseModel):
+    result: str

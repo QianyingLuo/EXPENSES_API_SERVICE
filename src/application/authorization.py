@@ -1,10 +1,29 @@
 from typing import Annotated
-from fastapi import Depends, HTTPException, Header
+from fastapi import HTTPException, Header
+import jwt
 
-async def verify_token(x_token: Annotated[str, Header()]):
-    if x_token != "fake-super-secret-token":
-        raise HTTPException(status_code=400, detail="X-Token header invalid")
+async def verify_token(authorization: Annotated[str, Header()]):
+    if not authorization:
+        raise HTTPException(status_code=400, detail="Bearer token not provided")
     
-async def auth_exists(authorization: Annotated[str, Header()]):
-    if authorization:
-        raise ValueError()
+    authorization = authorization.replace("Bearer ", "")
+
+    jwt.decode(
+        authorization,
+        "token_secret",
+        algorithms=["HS256"],
+        options={"verify_signature": True},
+    )
+    
+async def user_info(authorization: Annotated[str, Header()]):
+    if not authorization:
+        raise HTTPException(status_code=400, detail="Bearer token not provided")
+    
+    authorization = authorization.replace("Bearer ", "")
+
+    return jwt.decode(
+        authorization,
+        "token_secret",
+        algorithms=["HS256"],
+        options={"verify_signature": True},
+    )

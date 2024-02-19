@@ -7,7 +7,7 @@ from src.domain.user import GetUser
 
 
 from datetime import datetime
-from typing import Self
+from typing import Optional, Self
 
 from pydantic import Field, EmailStr
 from pydantic_extra_types.phone_numbers import PhoneNumber
@@ -41,6 +41,7 @@ class GetUserEntity(CustomBaseModel):
     birthday: datetime
     phone_number: PhoneNumber
     password: str
+    token: Optional[str] = None
 
     def to_domain(self) -> GetUser:
         return GetUser.model_validate(self.model_dump())

@@ -1,10 +1,12 @@
 from typing import Annotated
-from fastapi import APIRouter, Body, Path
+from fastapi import APIRouter, Body, Depends, Path
+from src.domain.user import JwtUser
 from src.application import log
 from src.domain.common import CreationResponse, InvalidCredentials, UserAlreadyExists, GenericHTTPException, UserNotFound
 from src.controller.request.user_request import RegisterUserRequest, LoginCredentialsRequest
-from src.controller.response.user_response import GetUserResponse, LoginResultResponse
+from src.controller.response.user_response import GetUserResponse, LoginResultResponse, LogoutResultResponse
 from src.application.usecases import user_usecases
+from src.application import authorization
 from fastapi import FastAPI, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
@@ -14,7 +16,7 @@ router = APIRouter()
 
 
 @router.get(
-    path="/{user_id}",
+    path="/auth/{user_id}",
     response_model=GetUserResponse,
     operation_id="Get User",
     description="Endpoint for getting user",
@@ -54,6 +56,21 @@ def login_user(
     logger.debug("User -> POST -> Login user")
     login_result = user_usecases.login(credentials.to_domain())
     return LoginResultResponse.to_response(login_result)
+
+
+@router.get(
+    path="/logout",
+    response_model=LogoutResultResponse,
+    operation_id="Logout User",
+    description="Endpoint for evaluate logout",
+    dependencies=[Depends(authorization.verify_token)]
+)
+def logout_user(
+    user_info: Annotated[dict, Depends(authorization.user_info)]
+) -> LogoutResultResponse:
+    logger.debug("User -> GET -> Logout user")
+    user_usecases.logout(JwtUser.model_validate(user_info))
+    return LogoutResultResponse(result=str(status.HTTP_200_OK))
 
 
 
