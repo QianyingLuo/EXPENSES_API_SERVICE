@@ -4,22 +4,22 @@ from typing import Optional
 from fastapi import HTTPException, status
 import jwt
 import bcrypt
-from src.domain.user import GetUser, JwtUser, LoginCredentials, LoginResult
+from src.domain import user as domain
 from src.repository import user_repository
-from src.domain.common import CreationResponse, InvalidCredentials, UserAlreadyExists, UserNotFound
+from src.domain import common
 from src.domain.user import RegisterUser
 from src.repository import user_repository
 from src.application.environment import jwt_environment_variables
 
 
-def get_user(user_info: JwtUser) -> Optional[GetUser]:
+def get_user(user_info: domain.JwtUser) -> Optional[domain.GetUser]:
     return user_repository.get_user_by_email(user_info.email)
 
 
-def post_user(user: RegisterUser) -> CreationResponse:
+def post_user(user: RegisterUser) -> common.CreationResponse:
 
     if user_repository.get_user_by_email(user.email):
-        raise UserAlreadyExists("It seems that this account is already registered")
+        raise common.UserAlreadyExists("It seems that this account is already registered")
 
     salt = bcrypt.gensalt()
     hashed_password = bcrypt.hashpw(user.password.encode('utf-8'), salt)
@@ -27,11 +27,11 @@ def post_user(user: RegisterUser) -> CreationResponse:
     return user_repository.post_user(user)
 
 
-def login(credentials: LoginCredentials) -> LoginResult:
+def login(credentials: domain.LoginCredentials) -> domain.LoginResult:
     user = user_repository.get_user_by_email(credentials.email)
 
     if not user:
-        raise InvalidCredentials("The credentials provided are not valid")
+        raise common.InvalidCredentials("The credentials provided are not valid")
     
     password_is_valid = bcrypt.checkpw(
         credentials.password.encode('utf-8'), 
@@ -39,10 +39,10 @@ def login(credentials: LoginCredentials) -> LoginResult:
     )
     
     if not password_is_valid:
-        raise InvalidCredentials("The credentials provided are not valid")
+        raise common.InvalidCredentials("The credentials provided are not valid")
 
     secret_jwt = jwt_environment_variables["TOKEN_SECRET"]
-    user_jwt = JwtUser.model_validate(user.model_dump())
+    user_jwt = domain.JwtUser.model_validate(user.model_dump())
     expiration = timedelta(days=1)
     user_jwt_dictionary = user_jwt.model_dump()
     user_jwt_dictionary["exp"] = datetime.datetime.now().astimezone(tz=timezone.utc) + expiration
@@ -56,14 +56,14 @@ def login(credentials: LoginCredentials) -> LoginResult:
             detail="Some error occured while trying to update token. Contact with devs.toni@gmail.com"
         )
  
-    return LoginResult(
+    return domain.LoginResult(
         firstname=user_jwt.firstname,
         lastname=user_jwt.lastname,
         email=user_jwt.email,
         token=encoded_jwt
     )
 
-def logout(user_info: JwtUser) -> bool:
+def logout(user_info: domain.JwtUser) -> bool:
     user = user_repository.get_user_by_email(user_info.email)
     
     if not user:
