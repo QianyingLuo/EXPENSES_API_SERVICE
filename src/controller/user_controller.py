@@ -16,16 +16,16 @@ router = APIRouter()
 
 
 @router.get(
-    path="/auth/{user_id}",
+    path="/auth/info",
     response_model=GetUserResponse,
     operation_id="Get User",
     description="Endpoint for getting user",
 )
 def get_user(
-    user_id: Annotated[str, Path()]
+    user_info: Annotated[dict, Depends(authorization.user_info)]
 ) -> GetUserResponse:
     logger.debug("User -> GET -> Obtain user")
-    user = user_usecases.get_user(user_id)
+    user = user_usecases.get_user(JwtUser.model_validate(user_info))
     if not user: 
         raise UserNotFound("The user does not exist")
     return GetUserResponse.to_response(user)

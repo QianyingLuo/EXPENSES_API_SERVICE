@@ -12,8 +12,8 @@ from src.repository import user_repository
 from src.application.environment import jwt_environment_variables
 
 
-def get_user(id: str) -> Optional[GetUser]:
-    return user_repository.get_user_by_id(id)
+def get_user(user_info: JwtUser) -> Optional[GetUser]:
+    return user_repository.get_user_by_email(user_info.email)
 
 
 def post_user(user: RegisterUser) -> CreationResponse:

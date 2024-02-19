@@ -19,22 +19,6 @@ def post_user(user: RegisterUser) -> CreationResponse:
     
     return CreationResponse(id=response.inserted_id, acknowledged=response.acknowledged)
 
-def get_user_by_id(id: str) -> Optional[GetUser]:
-    pipeline = [{
-        "$match": {
-            "_id": bson.ObjectId(id)
-        }
-    }]
-    response = database.aggregate(
-        collection=USER_COLLECTION, 
-        pipeline=pipeline
-    )
-
-    if not response:
-        return None
-    
-    user = GetUserEntity.model_validate(response[0])
-    return user.to_domain()
 
 def get_user_by_email(email: str) -> Optional[GetUser]:
     pipeline = [{
