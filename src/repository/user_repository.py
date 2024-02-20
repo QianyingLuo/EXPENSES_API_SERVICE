@@ -25,6 +25,25 @@ def get_user_by_email(email: str) -> Optional[domain.GetUser]:
             "email": email
         }
     }]
+    
+    response = database.aggregate(
+        collection=USER_COLLECTION, 
+        pipeline=pipeline
+    )
+
+    if not response:
+        return None
+    
+    user = entity.GetUserEntity.model_validate(response[0])
+    return user.to_domain()
+
+def get_user_by_id(id: str) -> Optional[domain.GetUser]:
+    pipeline = [{
+        "$match": {
+            "_id": bson.ObjectId(id)
+        }
+    }]
+
     response = database.aggregate(
         collection=USER_COLLECTION, 
         pipeline=pipeline

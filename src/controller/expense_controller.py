@@ -27,6 +27,20 @@ def create_expense(
     return usecases.create_expense(expense.to_domain())
 
 
+@router.post(
+    path="/user",
+    response_model=common.CreationResponse,
+    operation_id="Create User Expense",
+    description="Endpoint for creating user expense",
+    dependencies=[Depends(authorization.verify_token)]
+)
+def add_user_expense(
+    expense: Annotated[request.UserExpense, Body()],
+) -> common.CreationResponse:
+    logger.debug("Expense -> POST -> Create user expense")
+    return usecases.add_user_expense(expense.to_domain())
+
+
 async def expense_already_exists_handler(
     request: Request, exception: common.ExpenseAlreadyExists
 ):
@@ -41,5 +55,20 @@ async def expense_already_exists_handler(
         ),
     )
 
-def expense_exception_handlers(app: FastAPI) -> None:
+async def expense_not_found_handler(
+    request: Request, exception: common.ExpenseNotFound
+):
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content=jsonable_encoder(
+            common.GenericHTTPException(
+                status_code=str(status.HTTP_400_BAD_REQUEST),
+                type="EXPENSE_NOT_FOUND",
+                detail=exception.args[0],
+            )
+        ),
+    )
+
+def add_expense_exception_handlers(app: FastAPI) -> None:
+    app.add_exception_handler(common.ExpenseNotFound, expense_not_found_handler) # type: ignore
     app.add_exception_handler(common.ExpenseAlreadyExists, expense_already_exists_handler) # type: ignore

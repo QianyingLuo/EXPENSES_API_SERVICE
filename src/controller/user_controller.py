@@ -93,10 +93,10 @@ async def user_not_found_exception_handler(
     request: Request, exception: common.UserNotFound
 ):
     return JSONResponse(
-        status_code=status.HTTP_204_NO_CONTENT,
+        status_code=status.HTTP_400_BAD_REQUEST,
         content=jsonable_encoder(
             common.GenericHTTPException(
-                status_code=str(status.HTTP_204_NO_CONTENT),
+                status_code=str(status.HTTP_400_BAD_REQUEST),
                 type="USER_NOT_FOUND",
                 detail=exception.args[0],
             )
@@ -118,7 +118,7 @@ async def invalid_credentials_exception_handler(
         ),
     )
 
-def user_exception_handlers(app: FastAPI) -> None:
+def add_user_exception_handlers(app: FastAPI) -> None:
     app.add_exception_handler(common.UserAlreadyExists, user_exists_exception_handler) # type: ignore
     app.add_exception_handler(common.UserNotFound, user_not_found_exception_handler) # type: ignore
     app.add_exception_handler(common.InvalidCredentials, invalid_credentials_exception_handler) # type: ignore
