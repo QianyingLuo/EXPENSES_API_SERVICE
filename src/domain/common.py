@@ -28,6 +28,11 @@ class CreationResponse(CustomBaseModel):
     id: str
     acknowledged: bool
 
+class DeletionResponse(CustomBaseModel):
+    deletion_count: int
+    acknowledged: bool
+
+
 class UserAlreadyExists(Exception): ...
 
 class UserNotFound(Exception): ...

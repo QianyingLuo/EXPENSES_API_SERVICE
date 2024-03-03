@@ -37,6 +37,9 @@ class DatabaseConnection:
     
     def update_one(self, collection: str, select: dict[str, Any], update: dict[str, Any]):
         return self.client[database_name][collection].update_one(select, update)
+
+    def delete_one(self, collection: str, select: dict[str, Any]):
+        return self.client[database_name][collection].delete_one(select)
     
 
 database = DatabaseConnection()
